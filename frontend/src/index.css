@@ -173,6 +173,17 @@ a {
   }
 }
 
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .animate-gradient-shift {
   background-size: 200% 200%;
   animation: gradient-shift 15s ease infinite;
@@ -228,6 +239,10 @@ a {
 
 .animate-slide-up {
   animation: slide-up 0.4s ease-out;
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
 }
 
 ::-webkit-scrollbar {

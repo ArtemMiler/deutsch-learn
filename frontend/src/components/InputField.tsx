@@ -4,8 +4,9 @@ interface InputFieldProps {
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   placeholder?: string;
-  type?: 'text' | 'password' | 'email';
-  className?: string;
+  type?: 'text' | 'password' | 'email' | 'url';
+  pattern?: string;
+  required?: boolean;
 }
 
 const InputField: React.FC<InputFieldProps> = ({
@@ -13,14 +14,15 @@ const InputField: React.FC<InputFieldProps> = ({
   onChange,
   placeholder = '',
   type = 'text',
-  className = '',
+  pattern,
+  required,
 }) => {
   return (
     <div
-      className={`relative rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 p-[3px] 
+      className="relative rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 p-[3px] 
         transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/25
         focus-within:shadow-lg focus-within:shadow-blue-500/25
-        focus-within:scale-102 hover:scale-102 ${className}`}
+        focus-within:scale-102 hover:scale-102"
     >
       <input
         type={type}
@@ -28,6 +30,8 @@ const InputField: React.FC<InputFieldProps> = ({
         onChange={onChange}
         placeholder={placeholder}
         aria-label={placeholder}
+        pattern={pattern}
+        required={required}
         className="
           w-full rounded-lg bg-white px-4 py-2 text-gray-800 font-medium 
           outline-none transition-all duration-300

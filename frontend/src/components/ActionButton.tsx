@@ -43,7 +43,7 @@ const ActionButton: React.FC<ActionButtonProps> = ({
       type="button"
       aria-label={text}
       className={`w-full relative overflow-hidden py-4 px-8 rounded-xl
-        text-lg font-semibold text-white
+        text-xl font-semibold text-white
         transform transition-all duration-300 ease-out shadow-lg hover:shadow-xl
         hover:scale-105 hover:-translate-y-0.5 active:scale-95
         focus:outline-none focus:ring-2 focus:ring-offset-2 ${baseGradient} ${hoverGradient} ${focusRing}`}

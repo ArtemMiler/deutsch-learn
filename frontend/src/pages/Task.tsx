@@ -11,9 +11,9 @@ const Task: React.FC = () => {
     translation: "Привет",
     image: "https://as1.ftcdn.net/jpg/02/12/25/36/1000_F_212253647_wwPf6K1KCCyVSlemr1qMjpn0DjqDmSoY.jpg",
     hard_level: 80,
-    is_verb: false,
-    //second_verb: "gtg",
-    //third_verb: "gtg",
+    is_verb: true,
+    second_verb: "gtg",
+    third_verb: "gtg",
   };
 
   return (

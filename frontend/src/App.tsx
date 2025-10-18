@@ -4,12 +4,17 @@ import Bg from './components/Bg.tsx';
 import WhiteCard from './components/WhiteCard.tsx';
 import ActionButton from './components/ActionButton.tsx';
 import Task from './pages/Task';
+import AddWord from './pages/AddWord';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
 
   const handleStartTraining = () => {
     navigate('/task');
+  };
+
+  const handleAddWords = () => {
+    navigate('/add-word');
   };
 
   return (
@@ -48,7 +53,7 @@ const HomePage: React.FC = () => {
               />
             </div>
             <div className="flex flex-row gap-4 animate-button-entrance-2">
-              <ActionButton text="Добавить слова" />
+              <ActionButton text="Добавить слова" onClick={handleAddWords} />
               <ActionButton text="Словарь" />
             </div>
           </div>
@@ -64,6 +69,7 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/task" element={<Task />} />
+        <Route path="/add-word" element={<AddWord />} />
       </Routes>
     </Router>
   );

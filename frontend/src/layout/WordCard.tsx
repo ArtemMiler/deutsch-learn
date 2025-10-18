@@ -59,24 +59,24 @@ const WordCard: React.FC<WordCardProps> = ({ word }) => {
           )}
         </div>
 
-      <div className="w-full grid grid-rows-3 gap-4 mt-2" role="form" aria-label="Форма ввода ответа">
+      <div className="w-full grid grid-rows-3 gap-4 mt-2 animate-slide-up" role="form" aria-label="Форма ввода ответа">
         {word.is_verb ? (
           <>
-            <div className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
+            <div>
               <InputField
                 value={inputValue}
                 onChange={handleInputChange}
                 placeholder="Введите первую форму"
               />
             </div>
-            <div className="animate-slide-up" style={{ animationDelay: '0.2s' }}>
+            <div>
               <InputField
                 value={verbInputs.second}
                 onChange={(e) => handleVerbInputChange('second', e)}
                 placeholder="Введите вторую форму"
               />
             </div>
-            <div className="animate-slide-up" style={{ animationDelay: '0.3s' }}>
+            <div>
               <InputField
                 value={verbInputs.third}
                 onChange={(e) => handleVerbInputChange('third', e)}
@@ -87,7 +87,7 @@ const WordCard: React.FC<WordCardProps> = ({ word }) => {
         ) : (
           <>
             <div aria-hidden="true" />
-            <div className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
+            <div>
               <InputField
                 value={inputValue}
                 onChange={handleInputChange}
@@ -99,7 +99,7 @@ const WordCard: React.FC<WordCardProps> = ({ word }) => {
         )}
       </div>
       
-      <div className="w-full mt-6 animate-slide-up" style={{ animationDelay: '0.4s' }}>
+      <div className="w-full mt-6 animate-slide-up">
         <ActionButton text="Подтвердить" color="base" />
       </div>
       </div>
