@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import InputField from '../components/InputField';
-import type { Word } from '../types/WordType';
+import ActionButton from '../components/ActionButton';
+import type { GermanWord } from '../types/WordType';
 
 interface AddWordFormProps {
-  onSubmit?: (word: Word) => void;
+  onSubmit?: (word: GermanWord) => void;
+  initialWord?: GermanWord;
 }
 
-const AddWordForm: React.FC<AddWordFormProps> = ({ onSubmit }) => {
+const AddWordForm: React.FC<AddWordFormProps> = ({ onSubmit, initialWord }) => {
   const [germanWord, setGermanWord] = useState('');
   const [translation, setTranslation] = useState('');
   const [imageUrl, setImageUrl] = useState('');
@@ -14,32 +16,57 @@ const AddWordForm: React.FC<AddWordFormProps> = ({ onSubmit }) => {
   const [secondVerb, setSecondVerb] = useState('');
   const [thirdVerb, setThirdVerb] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  useEffect(() => {
+    if (initialWord) {
+      setGermanWord(initialWord.german_word);
+      setTranslation(initialWord.translation);
+      setImageUrl(initialWord.image || '');
+      setIsVerb(initialWord.is_verb);
+      if (initialWord.is_verb) {
+        setSecondVerb(initialWord.second_verb);
+        setThirdVerb(initialWord.third_verb);
+      }
+    }
+  }, [initialWord]);
 
-    const newWord: Word = isVerb
+  const isFormValid = isVerb
+    ? germanWord.trim() !== '' && translation.trim() !== '' && secondVerb.trim() !== '' && thirdVerb.trim() !== ''
+    : germanWord.trim() !== '' && translation.trim() !== '';
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleSubmit();
+  };
+
+  const handleSubmit = () => {
+    if (!isFormValid) {
+      return;
+    }
+
+    const newWord: GermanWord = isVerb
       ? {
-          word: germanWord.trim(),
+          german_word: germanWord.trim(),
           translation: translation.trim(),
           image: imageUrl.trim() || undefined,
           hard_level: 0,
           is_verb: true,
           second_verb: secondVerb.trim(),
           third_verb: thirdVerb.trim(),
+          is_checked: false,
         }
       : {
-          word: germanWord.trim(),
+          german_word: germanWord.trim(),
           translation: translation.trim(),
           image: imageUrl.trim() || undefined,
           hard_level: 0,
           is_verb: false,
+          is_checked: false,
         };
 
     if (onSubmit) {
       onSubmit(newWord);
     }
 
-    // Очистка формы
     setGermanWord('');
     setTranslation('');
     setImageUrl('');
@@ -49,10 +76,8 @@ const AddWordForm: React.FC<AddWordFormProps> = ({ onSubmit }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-2xl mx-auto flex flex-col h-full">
-      {/* Верхние поля */}
-      <div className="space-y-5">
-        {/* Немецкое слово */}
+    <form onSubmit={handleFormSubmit} className="w-full max-w-2xl mx-auto flex flex-col h-full">
+      <div className="space-y-3 sm:space-y-5">
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">
             Новое слово <span className="text-red-500">*</span>
@@ -66,7 +91,6 @@ const AddWordForm: React.FC<AddWordFormProps> = ({ onSubmit }) => {
           />
         </div>
 
-        {/* Перевод */}
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">
             Перевод <span className="text-red-500">*</span>
@@ -80,8 +104,7 @@ const AddWordForm: React.FC<AddWordFormProps> = ({ onSubmit }) => {
           />
         </div>
 
-        {/* Переключатель типа слова */}
-        <div className="bg-gradient-to-r from-blue-50 to-cyan-50 p-4 rounded-xl border-2 border-blue-200/50">
+        <div className="bg-gradient-to-r from-blue-50 to-cyan-50 p-3 sm:p-4 rounded-xl border-2 border-blue-200/50">
           <label className="flex items-center space-x-3 cursor-pointer group">
             <div className="relative">
               <input
@@ -98,17 +121,16 @@ const AddWordForm: React.FC<AddWordFormProps> = ({ onSubmit }) => {
                 transition-all duration-300 peer-checked:translate-x-6 shadow-md">
               </div>
             </div>
-            <span className="font-semibold text-gray-700 group-hover:text-blue-600 transition-colors">
+            <span className="text-sm sm:text-base font-semibold text-gray-700 group-hover:text-blue-600 transition-colors">
               {isVerb ? 'Неправильный глагол' : 'Обычное слово'}
             </span>
           </label>
         </div>
       </div>
 
-      {/* Средняя часть с фиксированной высотой для форм глагола */}
-      <div className="relative h-[200px] mt-5">
+      <div className="relative min-h-0 mt-3 sm:mt-5 flex-shrink-0">
         {isVerb && (
-          <div className="space-y-4 animate-fadeIn bg-blue-50/50 p-5 rounded-xl border-2 border-blue-200/50">
+          <div className="space-y-3 sm:space-y-4 animate-fadeIn bg-blue-50/50 p-4 sm:p-5 rounded-xl border-2 border-blue-200/50">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Вторая форма глагола <span className="text-red-500">*</span>
@@ -137,9 +159,7 @@ const AddWordForm: React.FC<AddWordFormProps> = ({ onSubmit }) => {
         )}
       </div>
 
-      {/* Нижние элементы - всегда на одном месте */}
-      <div className="space-y-5 mt-5">
-        {/* Изображение (необязательно) */}
+      <div className="space-y-3 sm:space-y-5 mt-auto pt-3 sm:pt-5">
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">
             Ссылка на изображение (необязательно)
@@ -152,23 +172,13 @@ const AddWordForm: React.FC<AddWordFormProps> = ({ onSubmit }) => {
           />
         </div>
 
-        {/* Кнопка добавления */}
-        <div className="pt-2 pb-4">
-          <button
+        <div className="pt-2 pb-2 sm:pb-4">
+          <ActionButton
+            text={initialWord ? 'Сохранить изменения' : 'Добавить слово'}
+            color={isFormValid ? 'base' : 'disabled'}
+            disabled={!isFormValid}
             type="submit"
-            className="w-full relative overflow-hidden py-4 px-8 rounded-xl
-              text-xl font-semibold text-white
-              transform transition-all duration-300 ease-out shadow-lg hover:shadow-xl
-              hover:scale-105 hover:-translate-y-0.5 active:scale-95
-              focus:outline-none focus:ring-2 focus:ring-offset-2
-              bg-gradient-to-r from-blue-500 to-cyan-500
-              hover:from-cyan-500 hover:to-blue-500
-              focus:ring-blue-400"
-          >
-            <span className="relative z-10">
-              Добавить слово
-            </span>
-          </button>
+          />
         </div>
       </div>
     </form>

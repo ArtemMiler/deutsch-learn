@@ -5,6 +5,7 @@ import WhiteCard from './components/WhiteCard.tsx';
 import ActionButton from './components/ActionButton.tsx';
 import Task from './pages/Task';
 import AddWord from './pages/AddWord';
+import Dictionary from './pages/Dictionary';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -17,18 +18,14 @@ const HomePage: React.FC = () => {
     navigate('/add-word');
   };
 
+  const handleDictionary = () => {
+    navigate('/dictionary');
+  };
+
   return (
     <>
       <Bg />
-      <main className="flex items-center justify-center min-h-screen w-full p-0 relative overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-20 left-10 w-2 h-2 bg-blue-400/40 rounded-full animate-float-particle" />
-          <div className="absolute top-40 right-20 w-3 h-3 bg-purple-400/30 rounded-full animate-float-particle-slow" />
-          <div className="absolute bottom-32 left-1/4 w-2 h-2 bg-cyan-400/40 rounded-full animate-float-particle-slower" />
-          <div className="absolute top-1/3 right-1/3 w-1.5 h-1.5 bg-blue-300/50 rounded-full animate-float-particle" />
-          <div className="absolute bottom-20 right-10 w-2.5 h-2.5 bg-purple-300/40 rounded-full animate-float-particle-slow" />
-        </div>
-
+      <main className="flex items-center justify-center h-screen sm:min-h-screen w-full p-0 sm:p-4 relative overflow-hidden">
         <WhiteCard>
           <div className="mb-8 text-center flex-1 flex items-center justify-center">
             <div className="animate-title-entrance">
@@ -54,7 +51,7 @@ const HomePage: React.FC = () => {
             </div>
             <div className="flex flex-row gap-4 animate-button-entrance-2">
               <ActionButton text="Добавить слова" onClick={handleAddWords} />
-              <ActionButton text="Словарь" />
+              <ActionButton text="Словарь" onClick={handleDictionary} />
             </div>
           </div>
         </WhiteCard>
@@ -70,6 +67,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/task" element={<Task />} />
         <Route path="/add-word" element={<AddWord />} />
+        <Route path="/dictionary" element={<Dictionary />} />
       </Routes>
     </Router>
   );

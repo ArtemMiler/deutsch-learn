@@ -6,7 +6,7 @@ interface InputFieldProps {
   placeholder?: string;
   type?: 'text' | 'password' | 'email' | 'url';
   pattern?: string;
-  required?: boolean;
+  required?: boolean; //можно удалить пропс, и реализавать через заблокированную кнопку
 }
 
 const InputField: React.FC<InputFieldProps> = ({
