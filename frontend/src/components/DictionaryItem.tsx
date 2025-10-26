@@ -5,13 +5,13 @@ import { removeArticle } from '../utils/DeleteArticle';
 
 interface DictionaryItemProps {
   word: GermanWord;
-  on_check: (word: string) => void;
+  onCheck: (word: string) => void;
   onEdit: (word: string) => void;
 }
 
 const DictionaryItem: React.FC<DictionaryItemProps> = ({ 
   word, 
-  on_check, 
+  onCheck, 
   onEdit
 }) => {
   const displayWord = removeArticle(word.german_word);
@@ -42,7 +42,7 @@ const DictionaryItem: React.FC<DictionaryItemProps> = ({
 
         <div className="flex items-center gap-2 flex-shrink-0">
           <button
-            onClick={() => on_check(word.german_word)}
+            onClick={() => onCheck(word.german_word)}
             className={`p-2 rounded-lg transition-all duration-200 ${
               word.is_checked
                 ? 'bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-500 text-white hover:from-blue-600 hover:via-purple-600 hover:to-cyan-600'

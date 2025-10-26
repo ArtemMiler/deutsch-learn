@@ -93,9 +93,14 @@ const Dictionary: React.FC = () => {
   }, [words, searchQuery]);
 
   const handleCheck = (word: string) => {
-    setWords(prev => prev.map(w => 
-      w.german_word === word ? { ...w, is_checked: !w.is_checked } : w
-    ));
+    setWords(prev => {
+      const index = prev.findIndex(w => w.german_word === word);
+      if (index === -1) return prev;
+      
+      const newWords = [...prev];
+      newWords[index] = { ...newWords[index], is_checked: !newWords[index].is_checked };
+      return newWords;
+    });
   };
 
   const handleEdit = (wordText: string) => {
@@ -140,7 +145,7 @@ const Dictionary: React.FC = () => {
                   <DictionaryItem
                     key={`${word.german_word}-${index}`}
                     word={word}
-                    on_check={handleCheck}
+                    onCheck={handleCheck}
                     onEdit={handleEdit}
                   />
                 ))}
@@ -150,7 +155,7 @@ const Dictionary: React.FC = () => {
                 {searchQuery ? (
                   <>
                     <p className="text-gray-400 text-2xl font-semibold">
-                      🔍 Ничего не найдено
+                      Ничего не найдено
                     </p>
                     <button
                       onClick={() => setSearchQuery('')}

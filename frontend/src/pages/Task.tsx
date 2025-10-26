@@ -1,11 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Bg from '../components/Bg';
 import WhiteCard from '../components/WhiteCard';
 import WordCard from '../layout/WordCard';
 import type { GermanWord } from '../types/WordType';
 
+type AnswerState = 'unanswered' | 'correct' | 'wrong';
+
 //test word
 const Task: React.FC = () => {
+  const [answerState, setAnswerState] = useState<AnswerState>('unanswered');
+
   const sampleWord: GermanWord = {
     german_word: "Rot",
     translation: "красный",
@@ -17,13 +21,17 @@ const Task: React.FC = () => {
     //third_verb: "gtg",
   };
 
+  const handleAnswerStateChange = (state: AnswerState) => {
+    setAnswerState(state);
+  };
+
   return (
     <>
-      <Bg />
+      <Bg answerState={answerState} />
       <main className="flex items-center justify-center h-screen w-full p-0 sm:p-4 overflow-hidden">
         <WhiteCard>
           <div className="w-full h-full flex items-center justify-center">
-            <WordCard word={sampleWord} />
+            <WordCard word={sampleWord} onAnswerStateChange={handleAnswerStateChange} />
           </div>
         </WhiteCard>
       </main>

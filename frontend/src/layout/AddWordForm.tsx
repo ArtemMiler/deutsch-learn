@@ -15,6 +15,7 @@ const AddWordForm: React.FC<AddWordFormProps> = ({ onSubmit, initialWord }) => {
   const [isVerb, setIsVerb] = useState(false);
   const [secondVerb, setSecondVerb] = useState('');
   const [thirdVerb, setThirdVerb] = useState('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (initialWord) {
@@ -22,16 +23,92 @@ const AddWordForm: React.FC<AddWordFormProps> = ({ onSubmit, initialWord }) => {
       setTranslation(initialWord.translation);
       setImageUrl(initialWord.image || '');
       setIsVerb(initialWord.is_verb);
-      if (initialWord.is_verb) {
+      if (initialWord.is_verb && initialWord.second_verb && initialWord.third_verb) {
         setSecondVerb(initialWord.second_verb);
         setThirdVerb(initialWord.third_verb);
       }
     }
   }, [initialWord]);
 
-  const isFormValid = isVerb
-    ? germanWord.trim() !== '' && translation.trim() !== '' && secondVerb.trim() !== '' && thirdVerb.trim() !== ''
-    : germanWord.trim() !== '' && translation.trim() !== '';
+  const validationConfig = {
+    germanWord: {
+      required: true,
+      pattern: /^[a-zA-ZäöüÄÖÜß\s,()[\]/\\-]+$/,
+      patternMessage: 'Только немецкие буквы и символы: , ( ) [ ] / \\ -',
+    },
+    translation: {
+      required: true,
+      pattern: /^[а-яА-ЯёЁ\s,()[\]/\\-]+$/,
+      patternMessage: 'Только кириллица и символы: , ( ) [ ] / \\ -',
+    },
+    secondVerb: {
+      required: true,
+      pattern: /^[a-zA-ZäöüÄÖÜß\s,()[\]/\\-]+$/,
+      patternMessage: 'Только немецкие буквы и символы: , ( ) [ ] / \\ -',
+    },
+    thirdVerb: {
+      required: true,
+      pattern: /^[a-zA-ZäöüÄÖÜß\s,()[\]/\\-]+$/,
+      patternMessage: 'Только немецкие буквы и символы: , ( ) [ ] / \\ -',
+    },
+    imageUrl: {
+      required: false,
+      pattern: /^https?:\/\/.+\..+/,
+      patternMessage: 'Введите корректный URL',
+    },
+  };
+
+  const validateField = (fieldName: string, value: string): string => {
+    const config = validationConfig[fieldName as keyof typeof validationConfig];
+    if (!config) return '';
+
+    const trimmedValue = value.trim();
+
+    if (!trimmedValue) {
+      return '';
+    }
+
+    if (config.pattern && !config.pattern.test(value)) {
+      return config.patternMessage;
+    }
+
+    return '';
+  };
+
+  const handleFieldChange = (fieldName: string, value: string, setter: (value: string) => void) => {
+    setter(value);
+    const error = validateField(fieldName, value);
+    setErrors(prev => ({ ...prev, [fieldName]: error }));
+  };
+
+  const isFormValid = (() => {
+    const requiredFields = [
+      { name: 'germanWord', value: germanWord },
+      { name: 'translation', value: translation },
+    ];
+
+    if (isVerb) {
+      requiredFields.push(
+        { name: 'secondVerb', value: secondVerb },
+        { name: 'thirdVerb', value: thirdVerb }
+      );
+    }
+
+    for (const field of requiredFields) {
+      if (!field.value.trim()) {
+        return false;
+      }
+      if (validateField(field.name, field.value)) {
+        return false;
+      }
+    }
+
+    if (imageUrl.trim() && validateField('imageUrl', imageUrl)) {
+      return false;
+    }
+
+    return true;
+  })();
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,10 +161,9 @@ const AddWordForm: React.FC<AddWordFormProps> = ({ onSubmit, initialWord }) => {
           </label>
           <InputField
             value={germanWord}
-            onChange={(e) => setGermanWord(e.target.value)}
+            onChange={(e) => handleFieldChange('germanWord', e.target.value, setGermanWord)}
             placeholder="Слово на немецком"
-            pattern="^[a-zA-ZäöüÄÖÜß\s\-]+$"
-            required
+            error={errors.germanWord}
           />
         </div>
 
@@ -97,10 +173,9 @@ const AddWordForm: React.FC<AddWordFormProps> = ({ onSubmit, initialWord }) => {
           </label>
           <InputField
             value={translation}
-            onChange={(e) => setTranslation(e.target.value)}
+            onChange={(e) => handleFieldChange('translation', e.target.value, setTranslation)}
             placeholder="Перевод на русский"
-            pattern="^[а-яА-ЯёЁ\s\-,]+$"
-            required
+            error={errors.translation}
           />
         </div>
 
@@ -137,10 +212,9 @@ const AddWordForm: React.FC<AddWordFormProps> = ({ onSubmit, initialWord }) => {
               </label>
               <InputField
                 value={secondVerb}
-                onChange={(e) => setSecondVerb(e.target.value)}
+                onChange={(e) => handleFieldChange('secondVerb', e.target.value, setSecondVerb)}
                 placeholder="Präteritum"
-                pattern="^[a-zA-ZäöüÄÖÜß\s\-]+$"
-                required={isVerb}
+                error={errors.secondVerb}
               />
             </div>
             <div>
@@ -149,10 +223,9 @@ const AddWordForm: React.FC<AddWordFormProps> = ({ onSubmit, initialWord }) => {
               </label>
               <InputField
                 value={thirdVerb}
-                onChange={(e) => setThirdVerb(e.target.value)}
+                onChange={(e) => handleFieldChange('thirdVerb', e.target.value, setThirdVerb)}
                 placeholder="Partizip II"
-                pattern="^[a-zA-ZäöüÄÖÜß\s\-]+$"
-                required={isVerb}
+                error={errors.thirdVerb}
               />
             </div>
           </div>
@@ -166,9 +239,10 @@ const AddWordForm: React.FC<AddWordFormProps> = ({ onSubmit, initialWord }) => {
           </label>
           <InputField
             value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
+            onChange={(e) => handleFieldChange('imageUrl', e.target.value, setImageUrl)}
             placeholder="https://example.com/image.jpg"
             type="url"
+            error={errors.imageUrl}
           />
         </div>
 
