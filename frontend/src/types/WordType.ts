@@ -1,9 +1,9 @@
 type GermanWordBase = {
+    id: number;
     german_word: string;
     translation: string;
     image?: string;
     hard_level: number;
-    is_checked: boolean;
   };
   
   type VerbWord = GermanWordBase & {

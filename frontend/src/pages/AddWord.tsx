@@ -5,16 +5,64 @@ import WhiteCard from '../components/WhiteCard';
 import HomeButton from '../components/HomeButton';
 import AddWordForm from '../layout/AddWordForm';
 import type { GermanWord } from '../types/WordType';
+import { API_URL } from '../utils/api';
+
+interface LocationState {
+  word?: GermanWord;
+}
 
 const AddWord: React.FC = () => {
   const location = useLocation();
-  const editWord = location.state?.word as GermanWord | undefined;
+  const state = location.state as LocationState | null;
+  const editWord = state?.word;
 
-  const handleAddWord = (word: GermanWord) => {
-    if (editWord) {
-      alert(`Слово "${word.german_word}" успешно обновлено!`);
-    } else {
-      alert(`Слово "${word.german_word}" успешно добавлено!`);
+  const prepareWordData = (word: GermanWord) => ({
+    german_word: word.german_word,
+    translation: word.translation,
+    image: word.image || null,
+    hard_level: word.hard_level,
+    is_verb: word.is_verb,
+    second_verb: word.is_verb ? word.second_verb : null,
+    third_verb: word.is_verb ? word.third_verb : null,
+  });
+
+  const handleAddWord = async (word: GermanWord) => {
+    try {
+      const wordData = prepareWordData(word);
+      
+      if (editWord) {
+        const response = await fetch(`${API_URL}/api/words/${word.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(wordData),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.detail || 'Ошибка при обновлении слова');
+        }
+
+        alert(`Слово "${word.german_word}" успешно обновлено!`);
+      } else {
+        const response = await fetch(`${API_URL}/api/words/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(wordData),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.detail || 'Ошибка при добавлении слова');
+        }
+
+        alert(`Слово "${word.german_word}" успешно добавлено!`);
+      }
+    } catch (err) {
+      alert(`Ошибка: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`);
     }
   };
 
@@ -34,7 +82,10 @@ const AddWord: React.FC = () => {
           </div>
           
           <div className="w-full flex-1 flex flex-col overflow-hidden px-4">
-            <AddWordForm onSubmit={handleAddWord} initialWord={editWord} />
+            <AddWordForm 
+              onSubmit={handleAddWord} 
+              initialWord={editWord} 
+            />
           </div>
         </WhiteCard>
       </main>

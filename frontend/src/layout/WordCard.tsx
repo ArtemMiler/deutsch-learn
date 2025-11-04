@@ -2,17 +2,17 @@ import React, { useState, useEffect } from 'react';
 import type { GermanWord } from '../types/WordType';
 import InputField from '../components/InputField';
 import ActionButton from '../components/ActionButton';
-import HomeButton from '../components/HomeButton';
 import ConfettiParticles from '../components/ConfettiParticles';
 
 interface WordCardProps {
-  word: GermanWord;
+  words: GermanWord[];
   onAnswerStateChange?: (state: AnswerState) => void;
 }
 
 type AnswerState = 'unanswered' | 'correct' | 'wrong';
 
-const WordCard: React.FC<WordCardProps> = ({ word, onAnswerStateChange }) => {
+const WordCard: React.FC<WordCardProps> = ({ words, onAnswerStateChange }) => {
+  const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [inputValue, setInputValue] = useState('');
   const [verbInputs, setVerbInputs] = useState({
     second: '',
@@ -23,10 +23,24 @@ const WordCard: React.FC<WordCardProps> = ({ word, onAnswerStateChange }) => {
   const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
+    setInputValue('');
+    setVerbInputs({ second: '', third: '' });
+    setAnswerState('unanswered');
+    setShowConfetti(false);
+    setImageError(false);
+  }, [currentWordIndex]);
+
+  useEffect(() => {
     if (onAnswerStateChange) {
       onAnswerStateChange(answerState);
     }
   }, [answerState, onAnswerStateChange]);
+
+  if (!words || words.length === 0) {
+    return null;
+  }
+
+  const word = words[currentWordIndex];
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
@@ -48,7 +62,11 @@ const WordCard: React.FC<WordCardProps> = ({ word, onAnswerStateChange }) => {
 
   const handleSubmit = () => {
     if (answerState !== 'unanswered') {
-      window.location.reload();
+      if (currentWordIndex < words.length - 1) {
+        setCurrentWordIndex(prev => prev + 1);
+      } else {
+        window.location.reload();
+      }
       return;
     }
 
@@ -107,7 +125,7 @@ const WordCard: React.FC<WordCardProps> = ({ word, onAnswerStateChange }) => {
       {showConfetti && <ConfettiParticles type={answerState === 'correct' ? 'correct' : 'wrong'} />}
       
       <article 
-        className="relative w-[90%] max-w-[350px] sm:max-w-[370px] md:max-w-[380px] mx-auto"
+        className="relative w-[90%] max-w-[350px] sm:max-w-[370px] md:max-w-[380px] mx-auto mt-5"
         role="region"
         aria-label={`Карточка слова: ${word.translation}`}
       >
@@ -115,32 +133,28 @@ const WordCard: React.FC<WordCardProps> = ({ word, onAnswerStateChange }) => {
       
       <div className="relative bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl transition-shadow duration-300">
         <div className="w-full flex flex-col items-center">
-          <div className="w-full flex items-center justify-between mb-1 mt-2">
-            <HomeButton />
-            <h2 className="text-3xl font-bold text-center bg-indigo-600 bg-clip-text text-transparent flex-1">
+          <div className="w-full flex items-center justify-center mb-1 mt-1">
+            <h2 className="text-3xl font-bold text-center bg-indigo-600 bg-clip-text text-transparent">
               {word.translation}
             </h2>
-            <div className="w-10" />
           </div>
 
-          {word.image && (
-            <figure className="w-60 h-60 my-7 rounded-xl overflow-hidden flex items-center justify-center relative bg-gradient-to-br from-gray-100 to-gray-200">
-              {imageError ? (
-                <div className="text-center p-4">
-                  <span className="text-6xl mb-2 block">📷</span>
-                  <p className="text-sm text-gray-500">Изображение недоступно</p>
-                </div>
-              ) : (
-                <img
-                  src={word.image}
-                  alt={`Изображение для слова ${word.translation}: ${word.translation}`}
-                  className="w-full h-full object-contain"
-                  loading="lazy"
-                  onError={() => setImageError(true)}
-                />
-              )}
-            </figure>
-          )}
+          <figure className="w-60 h-60 my-4 rounded-xl overflow-hidden flex items-center justify-center relative">
+            {!word.image || imageError ? (
+              <div className="text-center p-4">
+                <span className="text-7xl mb-2 block">📷</span>
+                <p className="text-lg text-gray-500">Изображение отсутствует</p>
+              </div>
+            ) : (
+              <img
+                src={word.image}
+                alt={`Изображение для слова ${word.translation}: ${word.translation}`}
+                className="w-full h-full object-contain"
+                loading="lazy"
+                onError={() => setImageError(true)}
+              />
+            )}
+          </figure>
         </div>
 
       <div className="w-full grid grid-rows-3 gap-4 mt-2 animate-slide-up" role="form" aria-label="Форма ввода ответа">

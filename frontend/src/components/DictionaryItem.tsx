@@ -1,16 +1,18 @@
 import React from 'react';
 import { HiCheck, HiPencil } from 'react-icons/hi';
 import type { GermanWord } from '../types/WordType';
-import { removeArticle } from '../utils/DeleteArticle';
+import { removeArticle } from '../utils/deleteArticle';
 
 interface DictionaryItemProps {
   word: GermanWord;
-  onCheck: (word: string) => void;
-  onEdit: (word: string) => void;
+  isChecked: boolean;
+  onCheck: (word: GermanWord) => void;
+  onEdit: (word: GermanWord) => void;
 }
 
 const DictionaryItem: React.FC<DictionaryItemProps> = ({ 
   word, 
+  isChecked,
   onCheck, 
   onEdit
 }) => {
@@ -42,9 +44,9 @@ const DictionaryItem: React.FC<DictionaryItemProps> = ({
 
         <div className="flex items-center gap-2 flex-shrink-0">
           <button
-            onClick={() => onCheck(word.german_word)}
+            onClick={() => onCheck(word)}
             className={`p-2 rounded-lg transition-all duration-200 ${
-              word.is_checked
+              isChecked
                 ? 'bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-500 text-white hover:from-blue-600 hover:via-purple-600 hover:to-cyan-600'
                 : 'bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600'
             }`}
@@ -54,7 +56,7 @@ const DictionaryItem: React.FC<DictionaryItemProps> = ({
           </button>
 
           <button
-            onClick={() => onEdit(word.german_word)}
+            onClick={() => onEdit(word)}
             className="p-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 transition-all duration-200"
             aria-label="Edit word"
           >

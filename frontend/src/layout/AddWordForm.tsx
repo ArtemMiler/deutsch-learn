@@ -122,34 +122,36 @@ const AddWordForm: React.FC<AddWordFormProps> = ({ onSubmit, initialWord }) => {
 
     const newWord: GermanWord = isVerb
       ? {
+          id: initialWord?.id || 0,
           german_word: germanWord.trim(),
           translation: translation.trim(),
           image: imageUrl.trim() || undefined,
-          hard_level: 0,
+          hard_level: initialWord?.hard_level || 0,
           is_verb: true,
           second_verb: secondVerb.trim(),
           third_verb: thirdVerb.trim(),
-          is_checked: false,
         }
       : {
+          id: initialWord?.id || 0,
           german_word: germanWord.trim(),
           translation: translation.trim(),
           image: imageUrl.trim() || undefined,
-          hard_level: 0,
+          hard_level: initialWord?.hard_level || 0,
           is_verb: false,
-          is_checked: false,
         };
 
     if (onSubmit) {
       onSubmit(newWord);
     }
 
-    setGermanWord('');
-    setTranslation('');
-    setImageUrl('');
-    setIsVerb(false);
-    setSecondVerb('');
-    setThirdVerb('');
+    if (!initialWord) {
+      setGermanWord('');
+      setTranslation('');
+      setImageUrl('');
+      setIsVerb(false);
+      setSecondVerb('');
+      setThirdVerb('');
+    }
   };
 
   return (

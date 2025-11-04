@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Bg from '../components/Bg';
 import WhiteCard from '../components/WhiteCard';
@@ -7,70 +7,53 @@ import ActionButton from '../components/ActionButton';
 import DictionaryItem from '../components/DictionaryItem';
 import InputField from '../components/InputField';
 import type { GermanWord } from '../types/WordType';
-import { removeArticle } from '../utils/DeleteArticle';
-
-// Тестовые данные
-const mockWords: GermanWord[] = [
-  {
-    german_word: 'das Haus',
-    translation: 'дом',
-    is_verb: false,
-    hard_level: 1,
-    is_checked: false,
-  },
-  {
-    german_word: 'lernen',
-    translation: 'учить',
-    is_verb: true,
-    second_verb: 'lernte',
-    third_verb: 'gelernt',
-    hard_level: 2,
-    is_checked: false,
-  },
-  {
-    german_word: 'der Apfel',
-    translation: 'яблоко',
-    is_verb: false,
-    hard_level: 1,
-    is_checked: false,
-  },
-  {
-    german_word: 'sprechen',
-    translation: 'говорить',
-    is_verb: true,
-    second_verb: 'sprach',
-    third_verb: 'gesprochen',
-    hard_level: 3,
-    is_checked: false,
-  },
-  {
-    german_word: 'das Buch',
-    translation: 'книга',
-    is_verb: false,
-    hard_level: 1,
-    is_checked: false,
-  },
-  {
-    german_word: 'die Katze',
-    translation: 'кошка',
-    is_verb: false,
-    hard_level: 1,
-    is_checked: false,
-  },
-  {
-    german_word: 'der Hund',
-    translation: 'собака',
-    is_verb: false,
-    hard_level: 1,
-    is_checked: false,
-  },
-];
+import { removeArticle } from '../utils/deleteArticle';
+import { API_URL } from '../utils/api';
 
 const Dictionary: React.FC = () => {
   const navigate = useNavigate();
 
-  const [words, setWords] = useState<GermanWord[]>(mockWords);
+  const [words, setWords] = useState<GermanWord[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+
+  useEffect(() => {
+    const fetchWords = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/words/all`);
+        
+        if (!response.ok) {
+          throw new Error('Ошибка загрузки данных');
+        }
+        
+        const data: GermanWord[] = await response.json();
+        setWords(data);
+      } catch (err) {
+        console.error('Ошибка при загрузке слов:', err);
+      } 
+    };
+
+    fetchWords();
+  }, []);
+
+  const handleDelete = async (ids: number[]) => {
+    try {
+      const response = await fetch(`${API_URL}/api/words/`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(ids),
+      });
+      if (!response.ok) {
+        throw new Error('Ошибка при удалении слов');
+      }
+      setWords(prev => prev.filter(w => !ids.includes(w.id)));
+      setSelectedIds(new Set());
+    } catch (err) {
+      console.error('Ошибка при удалении слов:', err);
+    }
+  };
 
   const sortedWords = useMemo(() => {
     let filtered = words;
@@ -92,32 +75,30 @@ const Dictionary: React.FC = () => {
     });
   }, [words, searchQuery]);
 
-  const handleCheck = (word: string) => {
-    setWords(prev => {
-      const index = prev.findIndex(w => w.german_word === word);
-      if (index === -1) return prev;
-      
-      const newWords = [...prev];
-      newWords[index] = { ...newWords[index], is_checked: !newWords[index].is_checked };
-      return newWords;
+  const handleCheck = (word: GermanWord) => {
+    setSelectedIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(word.id)) {
+        newSet.delete(word.id);
+      } else {
+        newSet.add(word.id);
+      }
+      return newSet;
     });
   };
 
-  const handleEdit = (wordText: string) => {
-    const wordToEdit = words.find(w => w.german_word === wordText);
-    if (wordToEdit) {
-      navigate('/add-word', { state: { word: wordToEdit } });
-    }
+  const handleEdit = (word: GermanWord) => {
+    navigate('/add-word', { state: { word } });
   };
 
   const handleAddToTraining = () => {
-    const selectedWords = words.filter(w => w.is_checked);
+    const selectedWords = words.filter(w => selectedIds.has(w.id));
     if (selectedWords.length > 0) {
       alert(`Добавлено в тренировку: ${selectedWords.length} слов(а)`);
     }
   };
 
-  const selectedCount = words.filter(w => w.is_checked).length;
+  const selectedCount = selectedIds.size;
   const hasSelectedWords = selectedCount > 0;
 
   return (
@@ -145,6 +126,7 @@ const Dictionary: React.FC = () => {
                   <DictionaryItem
                     key={`${word.german_word}-${index}`}
                     word={word}
+                    isChecked={selectedIds.has(word.id)}
                     onCheck={handleCheck}
                     onEdit={handleEdit}
                   />
@@ -181,8 +163,8 @@ const Dictionary: React.FC = () => {
             )}
           </div>
 
-          <div className="w-full px-4 pb-3 mt-4">
-            <div className="relative">
+          <div className="w-full flex flex-col gap-6 mt-auto mb-6 px-4">
+            <div className="relative animate-button-entrance-1">
               <InputField
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -198,15 +180,23 @@ const Dictionary: React.FC = () => {
                 </button>
               )}
             </div>
-          </div>
-
-          <div className="w-full px-4 pb-4">
-            <ActionButton
-              text={hasSelectedWords ? `Добавить в тренировку (${selectedCount})` : 'Добавить в тренировку'}
-              color={hasSelectedWords ? 'base' : 'disabled'}
-              disabled={!hasSelectedWords}
-              onClick={handleAddToTraining}
-            />
+            
+            <div className="flex flex-row gap-4 animate-button-entrance-2">
+              <ActionButton
+                text={hasSelectedWords ? `Добавить (${selectedCount})` : 'Добавить в список'}
+                color={hasSelectedWords ? 'base' : 'disabled'}
+                disabled={!hasSelectedWords}
+                onClick={handleAddToTraining}
+              />
+              <ActionButton
+                text={hasSelectedWords ? `Удалить (${selectedCount})` : 'Удалить'}
+                color={hasSelectedWords ? 'wrong' : 'disabled'}
+                disabled={!hasSelectedWords}
+                onClick={() => {
+                  handleDelete(Array.from(selectedIds));
+                }}
+              />
+            </div>
           </div>
         </WhiteCard>
       </main>
