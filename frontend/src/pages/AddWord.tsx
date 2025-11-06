@@ -24,6 +24,8 @@ const AddWord: React.FC = () => {
     is_verb: word.is_verb,
     second_verb: word.is_verb ? word.second_verb : null,
     third_verb: word.is_verb ? word.third_verb : null,
+    is_plural: word.is_plural,
+    plural: word.is_plural ? word.plural : null,
   });
 
   const handleAddWord = async (word: GermanWord) => {
@@ -54,7 +56,7 @@ const AddWord: React.FC = () => {
           body: JSON.stringify(wordData),
         });
 
-        if (!response.ok) {
+        if (!response.ok) {   // TODO: убрать 2 ифа
           const errorData = await response.json();
           throw new Error(errorData.detail || 'Ошибка при добавлении слова');
         }

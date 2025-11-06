@@ -13,8 +13,10 @@ const AddWordForm: React.FC<AddWordFormProps> = ({ onSubmit, initialWord }) => {
   const [translation, setTranslation] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [isVerb, setIsVerb] = useState(false);
+  const [isPlural, setIsPlural] = useState(false);
   const [secondVerb, setSecondVerb] = useState('');
   const [thirdVerb, setThirdVerb] = useState('');
+  const [plural, setPlural] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -23,9 +25,13 @@ const AddWordForm: React.FC<AddWordFormProps> = ({ onSubmit, initialWord }) => {
       setTranslation(initialWord.translation);
       setImageUrl(initialWord.image || '');
       setIsVerb(initialWord.is_verb);
+      setIsPlural(initialWord.is_plural);
       if (initialWord.is_verb && initialWord.second_verb && initialWord.third_verb) {
         setSecondVerb(initialWord.second_verb);
         setThirdVerb(initialWord.third_verb);
+      }
+      if (initialWord.is_plural && initialWord.plural) {
+        setPlural(initialWord.plural);
       }
     }
   }, [initialWord]);
@@ -55,6 +61,11 @@ const AddWordForm: React.FC<AddWordFormProps> = ({ onSubmit, initialWord }) => {
       required: false,
       pattern: /^https?:\/\/.+\..+/,
       patternMessage: 'Введите корректный URL',
+    },
+    plural: {
+      required: false,
+      pattern: /^[a-zA-ZäöüÄÖÜß\s,()[\]/\\-]+$/,
+      patternMessage: 'Только немецкие буквы и символы: , ( ) [ ] / \\ -',
     },
   };
 
@@ -93,6 +104,11 @@ const AddWordForm: React.FC<AddWordFormProps> = ({ onSubmit, initialWord }) => {
         { name: 'thirdVerb', value: thirdVerb }
       );
     }
+    if (isPlural) {
+      requiredFields.push(
+        { name: 'plural', value: plural },
+      );
+    }
 
     for (const field of requiredFields) {
       if (!field.value.trim()) {
@@ -120,25 +136,42 @@ const AddWordForm: React.FC<AddWordFormProps> = ({ onSubmit, initialWord }) => {
       return;
     }
 
-    const newWord: GermanWord = isVerb
-      ? {
-          id: initialWord?.id || 0,
-          german_word: germanWord.trim(),
-          translation: translation.trim(),
-          image: imageUrl.trim() || undefined,
-          hard_level: initialWord?.hard_level || 0,
-          is_verb: true,
-          second_verb: secondVerb.trim(),
-          third_verb: thirdVerb.trim(),
-        }
-      : {
-          id: initialWord?.id || 0,
-          german_word: germanWord.trim(),
-          translation: translation.trim(),
-          image: imageUrl.trim() || undefined,
-          hard_level: initialWord?.hard_level || 0,
-          is_verb: false,
-        };
+    let newWord: GermanWord;
+    
+    if (isVerb) {
+      newWord = {
+        id: initialWord?.id || 0,
+        german_word: germanWord.trim(),
+        translation: translation.trim(),
+        image: imageUrl.trim() || undefined,
+        hard_level: initialWord?.hard_level || 0,
+        is_verb: true,
+        second_verb: secondVerb.trim(),
+        third_verb: thirdVerb.trim(),
+        is_plural: false,
+      };
+    } else if (isPlural) {
+      newWord = {
+        id: initialWord?.id || 0,
+        german_word: germanWord.trim(),
+        translation: translation.trim(),
+        image: imageUrl.trim() || undefined,
+        hard_level: initialWord?.hard_level || 0,
+        is_verb: false,
+        is_plural: true,
+        plural: plural.trim(),
+      };
+    } else {
+      newWord = {
+        id: initialWord?.id || 0,
+        german_word: germanWord.trim(),
+        translation: translation.trim(),
+        image: imageUrl.trim() || undefined,
+        hard_level: initialWord?.hard_level || 0,
+        is_verb: false,
+        is_plural: false,
+      };
+    }
 
     if (onSubmit) {
       onSubmit(newWord);
@@ -149,8 +182,10 @@ const AddWordForm: React.FC<AddWordFormProps> = ({ onSubmit, initialWord }) => {
       setTranslation('');
       setImageUrl('');
       setIsVerb(false);
+      setIsPlural(false);
       setSecondVerb('');
       setThirdVerb('');
+      setPlural('');
     }
   };
 
@@ -181,33 +216,61 @@ const AddWordForm: React.FC<AddWordFormProps> = ({ onSubmit, initialWord }) => {
           />
         </div>
 
-        <div className="bg-gradient-to-r from-blue-50 to-cyan-50 p-3 sm:p-4 rounded-xl border-2 border-blue-200/50">
-          <label className="flex items-center space-x-3 cursor-pointer group">
-            <div className="relative">
-              <input
-                type="checkbox"
-                checked={isVerb}
-                onChange={(e) => setIsVerb(e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="w-14 h-8 bg-gray-300 rounded-full peer 
-                peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500
-                transition-all duration-300 shadow-inner">
+        <div className="bg-gradient-to-r from-blue-50 to-cyan-50 p-2 sm:p-4 rounded-xl border-2 border-blue-200/50">
+          <div className="flex flex-row gap-2 sm:gap-4 justify-center items-center">
+            <label className="flex items-center space-x-1.5 sm:space-x-2 cursor-pointer group">
+              <div className="relative flex-shrink-0">
+                <input
+                  type="checkbox"
+                  checked={isVerb}
+                  onChange={(e) => {
+                    setIsVerb(e.target.checked);
+                    if (e.target.checked) setIsPlural(false);
+                  }}
+                  className="sr-only peer"
+                />
+                <div className="w-10 h-5 sm:w-11 sm:h-6 bg-gray-300 rounded-full peer 
+                  peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500
+                  transition-all duration-300 shadow-inner">
+                </div>
+                <div className="absolute left-0.5 top-0.5 w-4 h-4 sm:w-5 sm:h-5 bg-white rounded-full 
+                  transition-all duration-300 peer-checked:translate-x-5 shadow-md">
+                </div>
               </div>
-              <div className="absolute left-1 top-1 w-6 h-6 bg-white rounded-full 
-                transition-all duration-300 peer-checked:translate-x-6 shadow-md">
+              <span className="text-[10px] sm:text-sm font-semibold text-gray-700 group-hover:text-blue-600 transition-colors whitespace-nowrap">
+                Неправ. глагол
+              </span>
+            </label>
+            <label className="flex items-center space-x-1.5 sm:space-x-2 cursor-pointer group">
+              <div className="relative flex-shrink-0">
+                <input
+                  type="checkbox"
+                  checked={isPlural}
+                  onChange={(e) => {
+                    setIsPlural(e.target.checked);
+                    if (e.target.checked) setIsVerb(false);
+                  }}
+                  className="sr-only peer"
+                />
+                <div className="w-10 h-5 sm:w-11 sm:h-6 bg-gray-300 rounded-full peer 
+                  peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-cyan-500
+                  transition-all duration-300 shadow-inner">
+                </div>
+                <div className="absolute left-0.5 top-0.5 w-4 h-4 sm:w-5 sm:h-5 bg-white rounded-full 
+                  transition-all duration-300 peer-checked:translate-x-5 shadow-md">
+                </div>
               </div>
-            </div>
-            <span className="text-sm sm:text-base font-semibold text-gray-700 group-hover:text-blue-600 transition-colors">
-              {isVerb ? 'Неправильный глагол' : 'Обычное слово'}
-            </span>
-          </label>
+              <span className="text-[10px] sm:text-sm font-semibold text-gray-700 group-hover:text-blue-600 transition-colors whitespace-nowrap">
+                Множ. число
+              </span>
+            </label>
+          </div>
         </div>
       </div>
 
       <div className="relative min-h-0 mt-3 sm:mt-5 flex-shrink-0">
         {isVerb && (
-          <div className="space-y-3 sm:space-y-4 animate-fadeIn bg-blue-50/50 p-4 sm:p-5 rounded-xl border-2 border-blue-200/50">
+          <div className="space-y-3 sm:space-y-4 animate-fadeIn bg-gradient-to-r from-blue-50 to-cyan-50 p-4 sm:p-5 rounded-xl border-2 border-blue-200/50">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Вторая форма глагола <span className="text-red-500">*</span>
@@ -228,6 +291,21 @@ const AddWordForm: React.FC<AddWordFormProps> = ({ onSubmit, initialWord }) => {
                 onChange={(e) => handleFieldChange('thirdVerb', e.target.value, setThirdVerb)}
                 placeholder="Partizip II"
                 error={errors.thirdVerb}
+              />
+            </div>
+          </div>
+        )}
+        {isPlural && (
+          <div className="space-y-3 sm:space-y-4 animate-fadeIn bg-gradient-to-r from-blue-50 to-cyan-50 p-4 sm:p-5 rounded-xl border-2 border-blue-200/50">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Множественное число <span className="text-red-500">*</span>
+              </label>
+              <InputField
+                value={plural}
+                onChange={(e) => handleFieldChange('plural', e.target.value, setPlural)}
+                placeholder="Plural"
+                error={errors.plural}
               />
             </div>
           </div>

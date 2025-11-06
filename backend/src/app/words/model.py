@@ -16,6 +16,11 @@ class Word(BaseModel):
             "(is_verb = FALSE AND second_verb IS NULL AND third_verb IS NULL)",
             name="check_verb_forms_consistency"
         ),
+        CheckConstraint(
+            "(is_plural = TRUE AND plural IS NOT NULL) OR "
+            "(is_plural = FALSE AND plural IS NULL)",
+            name="check_plural_consistency"
+        ),
     )
     
     id: Mapped[int] = mapped_column(primary_key=True, init=False, autoincrement=True)
@@ -26,6 +31,8 @@ class Word(BaseModel):
     is_verb: Mapped[bool] = mapped_column(default=False)
     second_verb: Mapped[Optional[str]] = mapped_column(String(100), default=None)
     third_verb: Mapped[Optional[str]] = mapped_column(String(100), default=None)
+    is_plural: Mapped[bool] = mapped_column(default=False)
+    plural: Mapped[Optional[str]] = mapped_column(String(100), default=None)
     
     def __repr__(self) -> str:
         return f"Word(id={self.id}, german_word='{self.german_word}', translation='{self.translation}')"

@@ -18,6 +18,7 @@ const WordCard: React.FC<WordCardProps> = ({ words, onAnswerStateChange }) => {
     second: '',
     third: ''
   });
+  const [pluralInput, setPluralInput] = useState('');
   const [answerState, setAnswerState] = useState<AnswerState>('unanswered');
   const [showConfetti, setShowConfetti] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -25,6 +26,7 @@ const WordCard: React.FC<WordCardProps> = ({ words, onAnswerStateChange }) => {
   useEffect(() => {
     setInputValue('');
     setVerbInputs({ second: '', third: '' });
+    setPluralInput('');
     setAnswerState('unanswered');
     setShowConfetti(false);
     setImageError(false);
@@ -58,6 +60,8 @@ const WordCard: React.FC<WordCardProps> = ({ words, onAnswerStateChange }) => {
 
   const isFormValid = word.is_verb
     ? inputValue.trim() !== '' && verbInputs.second.trim() !== '' && verbInputs.third.trim() !== ''
+    : word.is_plural
+    ? inputValue.trim() !== '' && pluralInput.trim() !== ''
     : inputValue.trim() !== '';
 
   const handleSubmit = () => {
@@ -81,6 +85,13 @@ const WordCard: React.FC<WordCardProps> = ({ words, onAnswerStateChange }) => {
         
         if (!isCorrect) {
           correctAnswer = 'Правильный ответ: ' + word.german_word + ' ' + word.second_verb + ' ' + word.third_verb;
+        }
+      } else if (word.is_plural) {
+        isCorrect = inputValue.trim().toLowerCase() === word.german_word.toLowerCase() &&
+                    pluralInput.trim().toLowerCase() === word.plural.toLowerCase();
+        
+        if (!isCorrect) {
+          correctAnswer = 'Правильный ответ: ' + word.german_word + ' (мн. ч.: ' + word.plural + ')';
         }
       } else {
         isCorrect = inputValue.trim().toLowerCase() === word.german_word.toLowerCase();
@@ -157,7 +168,8 @@ const WordCard: React.FC<WordCardProps> = ({ words, onAnswerStateChange }) => {
           </figure>
         </div>
 
-      <div className="w-full grid grid-rows-3 gap-4 mt-2 animate-slide-up" role="form" aria-label="Форма ввода ответа">
+        <div className={`w-full grid ${word.is_plural ? 'grid-rows-2' : 'grid-rows-3'} 
+        gap-4 mt-2 animate-slide-up`} role="form" ari-label="Форма ввода ответа">
         {word.is_verb ? (
           <>
             <div>
@@ -179,6 +191,21 @@ const WordCard: React.FC<WordCardProps> = ({ words, onAnswerStateChange }) => {
                 value={verbInputs.third}
                 onChange={(e) => handleVerbInputChange('third', e)}
                 placeholder="Введите третью форму"
+              />
+            </div>
+          </>
+        ) : word.is_plural ? (
+          <>
+            <div className="col-span-1 row-span-2 flex flex-col justify-center gap-4 my-7.5">
+              <InputField
+                value={inputValue}
+                onChange={handleInputChange}
+                placeholder="Введите перевод"
+              />
+              <InputField
+                value={pluralInput}
+                onChange={(e) => setPluralInput(e.target.value)}
+                placeholder="Множественное число"
               />
             </div>
           </>

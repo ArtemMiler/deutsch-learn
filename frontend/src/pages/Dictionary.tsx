@@ -64,7 +64,8 @@ const Dictionary: React.FC = () => {
         removeArticle(word.german_word).toLowerCase().includes(query) || 
         word.translation.toLowerCase().includes(query) ||
         word.second_verb?.toLowerCase().includes(query) ||
-        word.third_verb?.toLowerCase().includes(query)
+        word.third_verb?.toLowerCase().includes(query) ||
+        word.plural?.toLowerCase().includes(query)
       );
     }
   

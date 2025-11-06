@@ -4,15 +4,21 @@ from pydantic import BaseModel, Field, model_validator
 
 
 def validate_verb_consistency(obj):
-    is_verb = obj.is_verb
     
-    if is_verb is None:
+    if obj.is_verb is None or obj.is_plural is None:
         return obj
     
-    if is_verb:
+    if obj.is_verb:
         if not obj.second_verb or not obj.third_verb:
             raise ValueError("second_verb and third_verb are required when is_verb is True")
+        obj.plural = None
+    elif obj.is_plural:
+        if not obj.plural:
+            raise ValueError("plural is required when is_plural is True")
+        obj.second_verb = None
+        obj.third_verb = None
     else:
+        obj.plural = None
         obj.second_verb = None
         obj.third_verb = None
     
@@ -26,6 +32,8 @@ class WordBase(BaseModel):
     is_verb: bool = False
     second_verb: Optional[str] = Field(None, max_length=100)
     third_verb: Optional[str] = Field(None, max_length=100)
+    plural: Optional[str] = Field(None, max_length=100)
+    is_plural: bool = False
 
 
 class WordCreate(WordBase):
@@ -42,11 +50,11 @@ class WordUpdate(BaseModel):
     is_verb: Optional[bool] = None
     second_verb: Optional[str] = Field(None, max_length=100)
     third_verb: Optional[str] = Field(None, max_length=100)
-
+    plural: Optional[str] = Field(None, max_length=100)
+    is_plural: Optional[bool] = None
     @model_validator(mode='after')
     def validate_verb_forms(self):
         return validate_verb_consistency(self)
-
 
 
 class WordResponse(WordBase):

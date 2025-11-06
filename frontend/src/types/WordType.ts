@@ -10,12 +10,24 @@ type GermanWordBase = {
     is_verb: true;
     second_verb: string;
     third_verb: string;
+    is_plural: false;
+    plural?: never;
   };
   
-  type NonVerbWord = GermanWordBase & {
+  type PluralWord = GermanWordBase & {
     is_verb: false;
     second_verb?: never;
     third_verb?: never;
+    is_plural: true;
+    plural: string;
   };
   
-  export type GermanWord = VerbWord | NonVerbWord;
+  type RegularWord = GermanWordBase & {
+    is_verb: false;
+    second_verb?: never;
+    third_verb?: never;
+    is_plural: false;
+    plural?: never;
+  };
+  
+  export type GermanWord = VerbWord | PluralWord | RegularWord;

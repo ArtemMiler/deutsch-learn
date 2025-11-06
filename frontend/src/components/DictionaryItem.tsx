@@ -1,7 +1,7 @@
 import React from 'react';
 import { HiCheck, HiPencil } from 'react-icons/hi';
 import type { GermanWord } from '../types/WordType';
-import { removeArticle } from '../utils/deleteArticle';
+import { removeArticle } from '../utils/DeleteArticle';
 
 interface DictionaryItemProps {
   word: GermanWord;
@@ -38,6 +38,11 @@ const DictionaryItem: React.FC<DictionaryItemProps> = ({
           {word.is_verb && (
             <p className="text-xs text-gray-500 mt-1 truncate">
               {word.second_verb} · {word.third_verb}
+            </p>
+          )}
+          {word.is_plural && (
+            <p className="text-xs text-gray-500 mt-1 truncate">
+              {word.plural}
             </p>
           )}
         </div>
